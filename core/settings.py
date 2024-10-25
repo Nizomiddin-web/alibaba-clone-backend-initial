@@ -1,13 +1,16 @@
+import os.path
+import sys
 from email.policy import default
 from pathlib import Path
 from decouple import config
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+sys.path.append(os.path.join(BASE_DIR,'apps'))
 SECRET_KEY = config('SECRET_KEY',default="hjg^&%**%%^*GHVGJHGKJGKH")
 
 DEBUG = config('DEBUG',default=False,cast=bool)
+AUTH_USER_MODEL = 'user.User'
 
 ALLOWED_HOSTS = []
 
@@ -32,10 +35,12 @@ DJANGO_APPS = [
 EXTERNAL_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
 ]
 
 LOCAL_APPS = [
-
+    'user',
+    'share'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + LOCAL_APPS
@@ -141,6 +146,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+AUTHENTICATION_BACKENDS = [
+    'user.backends.CustomModelBackend'
+]
 
 
 # jwt setup

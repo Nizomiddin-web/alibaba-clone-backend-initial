@@ -14,6 +14,7 @@ app_name_2 = 'share'
 @pytest.mark.order(1)
 @pytest.mark.django_db
 def test_users_app_exists():
+    print(settings.INSTALLED_APPS,)
     try:
         import user
     except ImportError:

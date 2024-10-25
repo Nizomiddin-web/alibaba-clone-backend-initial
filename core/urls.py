@@ -17,17 +17,32 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
-from django.urls import path
+from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
 from core import settings
 from core.settings import DEBUG
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("health/",lambda _:JsonResponse({"detail":"Healthy"}),name="health"),
-    path('api/token/',TokenObtainPairView.as_view(),name="token-obtain-pair"),
-    path('api/refresh/',TokenRefreshView.as_view(),name="token-refresh"),
-    path('api/token/verify/',TokenVerifyView.as_view(),name='token-verify')
+    path("",lambda _:JsonResponse({"detail":"Healthy"}),name="health"),
+    path("api/",include(
+        [
+            #Token Generate
+            path('token/', TokenObtainPairView.as_view(), name="token-obtain-pair"),
+            path('refresh/', TokenRefreshView.as_view(), name="token-refresh"),
+            path('token/verify/', TokenVerifyView.as_view(), name='token-verify'),
+            #Apps path
+            # path("users/",include('user.urls')),
+            # path("share/",include('share.urls')),
+
+            #Swagger path
+            path("schema/",SpectacularAPIView.as_view(),name="schema"),
+            path("swagger/",SpectacularSwaggerView.as_view(url_name="schema"),name="swagger-ui"),
+            path("redoc/",SpectacularRedocView.as_view(url_name="schema"),name="redoc"),
+
+        ]
+    )),
 ]
 
 if DEBUG:
