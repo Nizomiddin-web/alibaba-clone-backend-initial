@@ -47,8 +47,8 @@ class Group(models.Model):
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True,default=uuid4)
-    phone_number = models.CharField(max_length=13,unique=True)
-    email = models.EmailField("Email Address",unique=True)
+    phone_number = models.CharField(max_length=13)
+    email = models.EmailField("Email Address")
     gender = models.CharField(max_length=10,null=True,blank=True)
     groups = models.ManyToManyField(Group,blank=True,related_name='users')
     policies = models.ManyToManyField(Policy,blank=True,related_name='users')
@@ -59,7 +59,7 @@ class User(AbstractUser):
 
     username = None
 
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = "id"
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
@@ -68,6 +68,9 @@ class User(AbstractUser):
         verbose_name='User'
         verbose_name_plural='Users'
         ordering=['-created_at']
+
+    def __str__(self):
+        return self.phone_number
 
 
 class AbstractClientUser(models.Model):

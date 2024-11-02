@@ -242,16 +242,15 @@ def test_signup(signup_data, api_client, mocker):
     Mock ishlatishdan sabab ushbu funksiyalar ishlashi talab qilinmaydi.
 
     """
-    print(redis_conn)
-    #
-    # mocker.patch('user.views.redis_conn', redis_conn)
-    # mocker.patch('user.views.generate_otp', return_value=('123456', '1v8z0Of5sJ0XI3cpNcHWrofrHZfY0oGJZbvGW4siTs0'))
-    # mocker.patch('user.views.send_email', return_value=email_status)
+
+    mocker.patch('user.views.redis_conn', redis_conn)
+    mocker.patch('user.views.generate_otp', return_value=('123456', '1v8z0Of5sJ0XI3cpNcHWrofrHZfY0oGJZbvGW4siTs0'))
+    mocker.patch('user.views.send_email', return_value=email_status)
 
 
-    mocker.patch('share.utils.OTPService.get_redis_conn', redis_conn)
-    mocker.patch('share.utils.OTPService.generate_otp', return_value=('123456', '1v8z0Of5sJ0XI3cpNcHWrofrHZfY0oGJZbvGW4siTs0'))
-    mocker.patch('share.utils.SendEmailService.send_email', return_value=email_status)
+    # mocker.patch('share.utils.OTPService.get_redis_conn', redis_conn)
+    # mocker.patch('share.utils.OTPService.generate_otp', return_value=('123456', '1v8z0Of5sJ0XI3cpNcHWrofrHZfY0oGJZbvGW4siTs0'))
+    # mocker.patch('share.utils.SendEmailService.send_email', return_value=email_status)
 
     resp = client.post('/api/users/register/', data=req_json, format='json')
 
@@ -259,7 +258,6 @@ def test_signup(signup_data, api_client, mocker):
     Responsedan qaytgan status code, kutilayotgan status kodga teng ekanligi tekshirish.
     """
     print(resp.content)
-    print(req_json)
     assert resp.status_code == status_code
 
     if status_code == 201:
