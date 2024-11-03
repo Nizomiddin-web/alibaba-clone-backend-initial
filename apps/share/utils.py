@@ -17,7 +17,7 @@ from django.core.mail import EmailMessage
 
 from django.template.loader import render_to_string
 
-from apps.user.exceptions import OTPException
+from apps.user.exceptions import OTPException, SecretTokenException
 from user.models import Group
 from user.models import User, Policy
 
@@ -144,3 +144,15 @@ def generate_otp(phone_number_or_email:str,expire_in:int=120,check_if_exists:boo
             )
         redis_conn.set(key,otp_hash,ex=expire_in)
         return otp_code,secret_token
+
+
+def check_otp(phone_number_or_email: str, otp_code: str, otp_secret: str) -> None:
+    redis_conn = get_redis_conn()
+    otp_secret1 = redis_conn.get(f"{phone_number_or_email}:otp_secret")
+    if otp_secret1:
+        otp_secret1 = otp_secret1.decode('utf-8')
+        if otp_secret!=otp_secret1:
+            raise SecretTokenException("Yaroqsiz OTP SECRET")
+    stored_hash = redis_conn.get(f"{phone_number_or_email}:otp")
+    if not stored_hash or not check_password(f"{otp_secret}:{otp_code}",stored_hash.decode()):
+        raise OTPException("Yaroqsiz otp kodi")

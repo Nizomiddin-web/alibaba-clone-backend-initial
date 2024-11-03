@@ -37,3 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
             phone_number = validated_data['phone_number']
         )
         return user
+
+class VerifyCodeSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True)
+    otp_code = serializers.CharField(required=True)

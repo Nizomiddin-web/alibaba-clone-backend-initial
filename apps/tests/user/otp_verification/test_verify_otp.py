@@ -153,6 +153,7 @@ def test_verify_otp(
         format='json'
     )
 
+    print(resp.content)
     assert resp.status_code == status_code
 
     if status_code == 200:

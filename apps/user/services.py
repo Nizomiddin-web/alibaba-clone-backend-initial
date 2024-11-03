@@ -1,17 +1,26 @@
-import random
-import string
+import datetime
+import enum
+
 import uuid
 from secrets import token_urlsafe
+from typing import Union
 
 import redis
 from decouple import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password, check_password
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
+from django.core.exceptions import ValidationError
+
 from django.utils.translation import gettext_lazy as _
-from apps.user.exceptions import OTPException
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from share.utils import get_redis_conn
+
+
+class TokenType(enum.Enum):
+    ACCESS = "access"
+    REFRESH = "refresh"
 
 REDIS_HOST = config('REDIS_HOST',None)
 REDIS_PORT = config('REDIS_PORT',None)
@@ -19,50 +28,59 @@ REDIS_DB = config('REDIS_DB',None)
 
 User = get_user_model()
 
-class EmailService:
-    @staticmethod
-    def send_email(email,otp_code):
-        subject = 'Welcome to Our Service!'
-        message = render_to_string('emails/send_otp_code.html',{
-            'email':email,
-            'otp_code':otp_code
-        })
-        email =  EmailMessage(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [email]
-        )
-        email.content_type = 'html'
-        email.send(fail_silently=False)
-
-class OTPService:
+class UserServie:
     @classmethod
-    def get_redis_conn(cls)->redis.Redis:
-        return redis.Redis(host=REDIS_HOST,port=REDIS_PORT,db=REDIS_DB)
+    def authenticate(cls, email_or_phone_number: str, password: str, quiet=False) -> Union[ValidationError, User, None]:
+       try:
+           if "@" in email_or_phone_number:
+               user = User.objects.get(email=email_or_phone_number)
+           else:
+               user = User.objects.get(phone_number = email_or_phone_number)
+       except User.DoesNotExist:
+           if not quiet:
+               print("Xatolik user not found")
+               return ValidationError('User not found')
+       if not check_password(password,user.password):
+           if not quiet:
+               return ValidationError("Parol noto'g'ri")
+           return None
+       return user
 
     @classmethod
-    def generate_otp(cls,phone_number_or_email:str,expire_in:int=120,check_if_exists:bool=True)->tuple[str,str]:
-        redis_conn =    cls.get_redis_conn()
-        otp_code = "".join(random.choices(string.digits,k=6))
-        secret_token = token_urlsafe()
-        otp_hash = make_password(f"{secret_token}:{otp_code}")
-        key = f"{[phone_number_or_email]}:otp"
+    def create_tokens(cls, user: User, access: str = None, refresh: str = None) -> dict[str, str]:
+        if not access or not refresh:
+            refresh_token = RefreshToken.for_user(user)
+            access_token =  refresh_token.access_token
+        else:
+            refresh_token = refresh
+            access_token = access
 
-        if check_if_exists and redis_conn.exists(key):
-            ttl = redis_conn.ttl(key)
-            raise OTPException(_("Sizda yaroqli OTP kodingiz bor. {ttl} soniyadan keyin qayta urinib koʻring.").format(ttl),ttl)
-        redis_conn.set(key,otp_hash,ex=expire_in)
-        return otp_code, secret_token
+        return {
+            "access":access_token,
+            "refresh":refresh_token
+        }
+
+
+class TokenService:
+    @classmethod
+    def get_valid_tokens(cls, user_id: uuid.UUID, token_type: TokenType) -> set:
+        redis_conn = get_redis_conn()
+        return redis_conn.get(f"{user_id}:{token_type.value}")
 
     @classmethod
-    def check_otp(cls,email:str,otp_code:str,otp_secret:str)->None:
-        redis_conn = cls.get_redis_conn()
-        stored_hash = redis_conn.get(f"{email}:otp")
-
-        if not stored_hash or not check_password(f"{otp_secret}:{otp_code}",stored_hash.decode()):
-            raise OTPException(_("Yaroqsiz OTP kodi."))
+    def add_token_to_redis(
+            cls,
+            user_id: uuid.UUID,
+            token: str,
+            token_type: TokenType,
+            expire_time: datetime.timedelta,
+    ) -> None:
+        redis_conn = get_redis_conn()
+        key = f"{user_id}:{token_type.value}"
+        redis_conn.set(key,token,ex=expire_time)
 
     @classmethod
-    def generate_token(cls)->str:
-        return str(uuid.uuid4())
+    def delete_tokens(cls, user_id: uuid.UUID, token_type: TokenType) -> None:
+        redis_conn = get_redis_conn()
+        key = f"{user_id}:{token_type.value}"
+        redis_conn.delete(key)
