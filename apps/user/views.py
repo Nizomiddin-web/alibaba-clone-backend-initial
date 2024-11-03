@@ -11,10 +11,11 @@ from share.enums import UserRole
 from share.utils import OTPService, check_otp
 from user.models import BuyerUser, Group, SellerUser
 from user.serializers import UserSerializer, VerifyCodeSerializer
-from share.utils import send_email,generate_otp,get_redis_conn
+from share.utils import generate_otp,get_redis_conn
 from rest_framework import generics
 
 from user.services import UserServie, TokenService, TokenType
+from user.tasks import send_email
 
 User = get_user_model()
 
@@ -48,7 +49,7 @@ class SignUpView(generics.CreateAPIView):
             else:
                 otp_code,secret_token = generate_otp(phone_number_or_email=user.phone_number)
                 try:
-                    send_email(email=user.email,otp_code=otp_code)
+                    send_email.delay(email=user.email,otp_code=otp_code)
                 except Exception:
                     redis_conn.delete(f"{user.phone_number}:otp_secret")
                     redis_conn.delete(f"{user.phone_number}:otp")
@@ -90,5 +91,4 @@ class VerifyView(generics.UpdateAPIView):
         tokens = UserServie.create_tokens(user=user,access=str(access),refresh=str(refresh))
         TokenService.add_token_to_redis(user.id,tokens['access'],TokenType.ACCESS,expire_time=timedelta(days=2))
         TokenService.add_token_to_redis(user.id,tokens['refresh'],TokenType.REFRESH,expire_time=timedelta(days=3))
-
         return Response(tokens,status=status.HTTP_200_OK)
