@@ -257,7 +257,7 @@ def test_signup(signup_data, api_client, mocker):
     """
     Responsedan qaytgan status code, kutilayotgan status kodga teng ekanligi tekshirish.
     """
-    print(resp.content)
+
     assert resp.status_code == status_code
 
     if status_code == 201:

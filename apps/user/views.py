@@ -25,6 +25,8 @@ class SignUpView(generics.CreateAPIView):
             if User.objects.filter(phone_number=serializer.validated_data['phone_number'], is_verified=True).exists():
                 return Response({'detail': _("User with this phone number already exists!")},
                                 status=status.HTTP_409_CONFLICT)
+            if User.objects.filter(email=serializer.validated_data['email'],is_verified=True).exists():
+                return Response({'detail':_("User with this email already exists!")})
             user = serializer.save()
             role = serializer.validated_data['user_trade_role']
             group = Group.objects.filter(name=role).first()
