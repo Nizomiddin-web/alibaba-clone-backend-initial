@@ -32,6 +32,7 @@ urlpatterns = [
             path('token/', TokenObtainPairView.as_view(), name="token-obtain-pair"),
             path('refresh/', TokenRefreshView.as_view(), name="token-refresh"),
             path('token/verify/', TokenVerifyView.as_view(), name='token-verify'),
+
             #Apps path
             path("users/",include('user.urls')),
             # path("share/",include('share.urls')),

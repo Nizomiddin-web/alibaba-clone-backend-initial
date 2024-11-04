@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from share.enums import UserRole
 from share.utils import OTPService, check_otp
 from user.models import BuyerUser, Group, SellerUser
-from user.serializers import UserSerializer, VerifyCodeSerializer
+from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer
 from share.utils import generate_otp,get_redis_conn
 from rest_framework import generics
 
@@ -57,6 +57,7 @@ class SignUpView(generics.CreateAPIView):
                     "phone_number":user.phone_number,
                     "otp_secret":secret_token
                 }
+            print(otp_code)
             return Response(data=data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
@@ -91,4 +92,19 @@ class VerifyView(generics.UpdateAPIView):
         tokens = UserServie.create_tokens(user=user,access=str(access),refresh=str(refresh))
         TokenService.add_token_to_redis(user.id,tokens['access'],TokenType.ACCESS,expire_time=timedelta(days=2))
         TokenService.add_token_to_redis(user.id,tokens['refresh'],TokenType.REFRESH,expire_time=timedelta(days=3))
+        return Response(tokens,status=status.HTTP_200_OK)
+
+class LoginView(generics.CreateAPIView):
+    serializer_class = LoginUserSerializer
+    permission_classes = [AllowAny,]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = UserServie.authenticate(serializer.validated_data['email_or_phone_number'],serializer.validated_data['password'])
+        except Exception as e:
+            return Response({"detail":f"{e}"},status=status.HTTP_400_BAD_REQUEST)
+        tokens = UserServie.create_tokens(user)
+        print(tokens)
         return Response(tokens,status=status.HTTP_200_OK)

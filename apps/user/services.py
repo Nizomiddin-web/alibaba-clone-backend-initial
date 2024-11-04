@@ -10,9 +10,9 @@ from decouple import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password, check_password
-from django.core.exceptions import ValidationError
 
 from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from share.utils import get_redis_conn
@@ -38,11 +38,10 @@ class UserServie:
                user = User.objects.get(phone_number = email_or_phone_number)
        except User.DoesNotExist:
            if not quiet:
-               print("Xatolik user not found")
-               return ValidationError('User not found')
+               raise ValidationError('User not found')
        if not check_password(password,user.password):
            if not quiet:
-               return ValidationError("Parol noto'g'ri")
+               raise ValidationError("Parol noto'g'ri")
            return None
        return user
 
@@ -50,7 +49,8 @@ class UserServie:
     def create_tokens(cls, user: User, access: str = None, refresh: str = None) -> dict[str, str]:
         if not access or not refresh:
             refresh_token = RefreshToken.for_user(user)
-            access_token =  refresh_token.access_token
+            access_token =  str(getattr(refresh_token,'access_token'))
+            refresh_token = str(refresh_token)
         else:
             refresh_token = refresh
             access_token = access

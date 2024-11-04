@@ -41,3 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
 class VerifyCodeSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
     otp_code = serializers.CharField(required=True)
+
+class LoginUserSerializer(serializers.Serializer):
+    email_or_phone_number = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)

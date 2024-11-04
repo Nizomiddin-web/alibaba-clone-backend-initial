@@ -93,6 +93,7 @@ def login_data(request, user_factory):
 def test_login(login_data, api_client):
     status_code, req_json = login_data()
     resp = api_client().post('/api/users/login/', data=req_json)
+    print(resp.content)
     assert resp.status_code == status_code
     if status_code == 200:
         resp_json = resp.json()
