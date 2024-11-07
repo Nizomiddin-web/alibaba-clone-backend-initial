@@ -140,6 +140,7 @@ def test_user_read(request, user_read_data, api_client):
             assert sorted(resp_json.keys()) == sorted(
                 user_data
             )
+        print(resp_json.keys())
         assert sorted(resp_json.keys()) == sorted(
             user_data
         )

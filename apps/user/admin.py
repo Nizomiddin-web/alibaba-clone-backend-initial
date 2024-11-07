@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from user.models import User, Group, Policy
+from user.models import User, Group, Policy, BuyerUser
 
 
 # Register your models here.
@@ -8,6 +8,10 @@ from user.models import User, Group, Policy
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ['email','phone_number']
+
+@admin.register(BuyerUser)
+class BuyerUserAdmin(admin.ModelAdmin):
+    list_display = ['user']
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):

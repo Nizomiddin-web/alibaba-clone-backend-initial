@@ -1,16 +1,21 @@
 from datetime import timedelta
+from functools import partial
 
+from click import group
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from django.template.context_processors import request
 from rest_framework import permissions, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.translation import gettext as _
 from share.enums import UserRole
+from share.permissions import GeneratePermissions
 from share.utils import OTPService, check_otp
 from user.models import BuyerUser, Group, SellerUser
-from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer
+from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer,\
+    SellerSerializer, BuyerSerializer
 from share.utils import generate_otp,get_redis_conn
 from rest_framework import generics
 
@@ -106,5 +111,35 @@ class LoginView(generics.CreateAPIView):
         except Exception as e:
             return Response({"detail":f"{e}"},status=status.HTTP_400_BAD_REQUEST)
         tokens = UserServie.create_tokens(user)
-        print(tokens)
         return Response(tokens,status=status.HTTP_200_OK)
+
+class UsersMeView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    permission_classes = [GeneratePermissions]
+
+    def get_serializer_class(self):
+        user = self.request.user
+        group = user.groups.first()
+        if group.name=='seller' and self.request.method=='GET':
+            return SellerSerializer
+        elif group.name=='buyer' and self.request.method=='GET':
+            return BuyerSerializer
+        return self.serializer_class
+
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        group = user.groups.first()
+        if group.name=='seller':
+            seller = SellerUser.objects.get(user=user)
+        else:
+            seller = BuyerUser.objects.get(user=user)
+        serializer = self.get_serializer(seller)
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        serializer = self.get_serializer(user,data=request.data,partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

@@ -3,18 +3,19 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from share.enums import UserRole
-from user.models import SellerUser
+from user.models import SellerUser, BuyerUser
 
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
-    user_trade_role = serializers.ChoiceField(choices=[UserRole.BUYER.value,UserRole.SELLER.value])
-    confirm_password = serializers.CharField(required=True)
+    user_trade_role = serializers.ChoiceField(choices=[UserRole.BUYER.value,UserRole.SELLER.value],write_only=True)
+    confirm_password = serializers.CharField(required=True,write_only=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     class Meta:
         model = User
         fields = ['gender','first_name','last_name','phone_number','email','password','confirm_password','user_trade_role']
+        extra_kwargs = {'password':{'write_only':True}}
 
     def validate(self,data):
         password = data.get('password')
@@ -37,6 +38,49 @@ class UserSerializer(serializers.ModelSerializer):
             phone_number = validated_data['phone_number']
         )
         return user
+
+class BuyerSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(source='image')
+    class Meta:
+        model = BuyerUser
+        fields = '__all__'
+
+
+    def to_representation(self, instance):
+        # Asl natijani olish
+        representation = super().to_representation(instance)
+        representation.pop('created_at', None)
+        representation.pop('updated_at', None)
+        representation.pop('user', None)
+        representation.pop('image', None)
+        representation.pop('created_by', None)
+
+        # UserSerializer yordamida user ma'lumotlarini olish va birlashtirish
+        if instance.user:
+            user_representation = UserSerializer(instance.user).data
+            representation.update(user_representation)  # Barcha user maydonlarini qo'shish
+
+        return representation
+
+class SellerSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(source='image')
+    class Meta:
+        model = SellerUser
+        fields = '__all__'
+    def to_representation(self, instance):
+        # Asl natijani olish
+        representation = super().to_representation(instance)
+        representation.pop('created_at', None)
+        representation.pop('updated_at', None)
+        representation.pop('user',None)
+        representation.pop('image',None)
+        representation.pop('created_by',None)
+        # UserSerializer yordamida user ma'lumotlarini olish va birlashtirish
+        if instance.user:
+            user_representation = UserSerializer(instance.user).data
+            representation.update(user_representation)  # Barcha user maydonlarini qo'shish
+
+        return representation
 
 class VerifyCodeSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True)
