@@ -122,18 +122,20 @@ class UsersMeView(generics.RetrieveUpdateAPIView):
         user = self.request.user
         group = user.groups.first()
         if group.name=='seller' and self.request.method=='GET':
-            return SellerSerializer
-        elif group.name=='buyer' and self.request.method=='GET':
-            return BuyerSerializer
+                return SellerSerializer
+        elif  group.name=='buyer' and self.request.method=='GET':
+                return BuyerSerializer
         return self.serializer_class
 
     def retrieve(self, request, *args, **kwargs):
         user = request.user
         group = user.groups.first()
-        if group.name=='seller':
+        if group and group.name=='seller':
             seller = SellerUser.objects.get(user=user)
-        else:
+        elif group and group.name=='buyer':
             seller = BuyerUser.objects.get(user=user)
+        else:
+            return Response({'detail':'Error'},status=status.HTTP_403_FORBIDDEN)
         serializer = self.get_serializer(seller)
         return Response(serializer.data)
 

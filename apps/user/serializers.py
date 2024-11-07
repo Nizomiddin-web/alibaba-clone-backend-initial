@@ -54,7 +54,7 @@ class BuyerSerializer(serializers.ModelSerializer):
         representation.pop('user', None)
         representation.pop('image', None)
         representation.pop('created_by', None)
-
+        representation.pop('company',None)
         # UserSerializer yordamida user ma'lumotlarini olish va birlashtirish
         if instance.user:
             user_representation = UserSerializer(instance.user).data
