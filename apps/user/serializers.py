@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(required=True,write_only=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
+
     class Meta:
         model = User
         fields = ['gender','first_name','last_name','phone_number','email','password','confirm_password','user_trade_role']
@@ -43,42 +44,30 @@ class BuyerSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(source='image')
     class Meta:
         model = BuyerUser
-        fields = '__all__'
+        fields = ['id','photo','bio','company','birth_date','country','city','district','street_address','postal_code','second_phone_number','building_number','apartment_number']
 
 
     def to_representation(self, instance):
-        # Asl natijani olish
         representation = super().to_representation(instance)
-        representation.pop('created_at', None)
-        representation.pop('updated_at', None)
-        representation.pop('user', None)
-        representation.pop('image', None)
-        representation.pop('created_by', None)
-        representation.pop('company',None)
-        # UserSerializer yordamida user ma'lumotlarini olish va birlashtirish
+        representation.pop('company')
+
         if instance.user:
             user_representation = UserSerializer(instance.user).data
-            representation.update(user_representation)  # Barcha user maydonlarini qo'shish
+            representation.update(user_representation)
 
         return representation
+
 
 class SellerSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(source='image')
     class Meta:
         model = SellerUser
-        fields = '__all__'
+        fields = ['id','photo','bio','company','birth_date','country','city','district','street_address','postal_code','second_phone_number','building_number','apartment_number']
     def to_representation(self, instance):
-        # Asl natijani olish
         representation = super().to_representation(instance)
-        representation.pop('created_at', None)
-        representation.pop('updated_at', None)
-        representation.pop('user',None)
-        representation.pop('image',None)
-        representation.pop('created_by',None)
-        # UserSerializer yordamida user ma'lumotlarini olish va birlashtirish
         if instance.user:
             user_representation = UserSerializer(instance.user).data
-            representation.update(user_representation)  # Barcha user maydonlarini qo'shish
+            representation.update(user_representation)
 
         return representation
 
@@ -89,3 +78,30 @@ class VerifyCodeSerializer(serializers.Serializer):
 class LoginUserSerializer(serializers.Serializer):
     email_or_phone_number = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True)
+
+    def validate_new_password(self,val):
+        if not self.has_digit(val):
+            raise ValidationError("Password must contain at least one digit.")
+        if not self.check_min_length(val,8):
+            raise ValidationError("New password must be at least 8 characters long.")
+        return val
+
+    def validate(self, attrs):
+        password = attrs.get('new_password')
+        confirm_password = attrs.get('confirm_password')
+        if password!=confirm_password:
+            raise ValidationError({'detail':'Password and Confirm Password must be same!'})
+        return attrs
+
+
+
+    def has_digit(self,val)->bool:
+        return any(i.isdigit() for i in val)
+
+    def check_min_length(self,val,min=4)->bool:
+        return len(val)>=min

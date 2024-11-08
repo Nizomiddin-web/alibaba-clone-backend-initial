@@ -1,10 +1,12 @@
 from datetime import timedelta
 from functools import partial
+from unittest.mock import patch
 
 from click import group
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from django.template.context_processors import request
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -14,8 +16,8 @@ from share.enums import UserRole
 from share.permissions import GeneratePermissions
 from share.utils import OTPService, check_otp
 from user.models import BuyerUser, Group, SellerUser
-from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer,\
-    SellerSerializer, BuyerSerializer
+from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer, \
+    SellerSerializer, BuyerSerializer, ChangePasswordSerializer
 from share.utils import generate_otp,get_redis_conn
 from rest_framework import generics
 
@@ -113,8 +115,21 @@ class LoginView(generics.CreateAPIView):
         tokens = UserServie.create_tokens(user)
         return Response(tokens,status=status.HTTP_200_OK)
 
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get user information",
+        responses={
+            200:BuyerSerializer
+        }
+    ),
+    patch=extend_schema(
+        summary="Update user information",
+        request=BuyerSerializer
+    )
+)
 class UsersMeView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
+    http_method_names = ['get','patch']
     queryset = User.objects.all()
     permission_classes = [GeneratePermissions]
 
@@ -145,3 +160,19 @@ class UsersMeView(generics.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated,]
+    serializer_class = ChangePasswordSerializer
+
+    def put(self,request,*args,**kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = UserServie.authenticate(email_or_phone_number=request.user.phone_number,password=serializer.validated_data['old_password'])
+
+        if user is not None:
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            tokens = UserServie.create_tokens(user)
+            return Response(tokens)
+        return Response(_("Eski Parol Xato!"))
