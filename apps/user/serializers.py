@@ -105,3 +105,52 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def check_min_length(self,val,min=4)->bool:
         return len(val)>=min
+
+class TokenResponseSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+class ValidationErrorSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+    def to_representation(self, instance):
+        if isinstance(instance,dict):
+            return instance
+        return super().to_representation(instance)
+
+class ForgotPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self,email):
+        if not User.objects.filter(email=email).exists():
+            raise ValidationError('Email Not exists!')
+        return  email
+
+class ForgotPasswordResponseSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    otp_secret = serializers.CharField(required=True)
+
+
+class ForgotPasswordVerifyRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True,write_only=True)
+    otp_code = serializers.CharField(required=True,write_only=True)
+
+    def validate_email(self,email):
+        if not User.objects.filter(email=email).exists():
+            raise ValidationError('Email Not exists!')
+        return email
+
+class ForgotPasswordVerifyResponseSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+    password = serializers.CharField(required=True,min_length=8,write_only=True)
+    confirm_password = serializers.CharField(required=True,min_length=8,write_only=True)
+
+    def validate(self, attrs):
+        password = attrs.get('password')
+        confirm_password = attrs.get('confirm_password')
+        if password!=confirm_password:
+            raise ValidationError({'detail':'Password and Confirm password must be same!'})
+        return attrs

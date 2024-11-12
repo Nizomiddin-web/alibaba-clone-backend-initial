@@ -1,13 +1,12 @@
 from datetime import timedelta
-from functools import partial
-from unittest.mock import patch
+from secrets import token_urlsafe
 
-from click import group
-from django.contrib.auth import get_user_model
-from django.shortcuts import render
-from django.template.context_processors import request
+from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.contrib.auth.hashers import make_password
+
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import permissions, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,7 +16,10 @@ from share.permissions import GeneratePermissions
 from share.utils import OTPService, check_otp
 from user.models import BuyerUser, Group, SellerUser
 from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer, \
-    SellerSerializer, BuyerSerializer, ChangePasswordSerializer
+    SellerSerializer, BuyerSerializer, ChangePasswordSerializer, \
+    ForgotPasswordVerifyRequestSerializer, TokenResponseSerializer, ValidationErrorSerializer, \
+    ForgotPasswordRequestSerializer, ForgotPasswordResponseSerializer, ForgotPasswordVerifyResponseSerializer, \
+    ResetPasswordRequestSerializer
 from share.utils import generate_otp,get_redis_conn
 from rest_framework import generics
 
@@ -29,10 +31,21 @@ User = get_user_model()
 # Create your views here.
 redis_conn = get_redis_conn()
 
+@extend_schema_view(
+    post=extend_schema(
+        summary="Sign Up a user",
+        request=UserSerializer,
+        responses={
+            201:UserSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
 class SignUpView(generics.CreateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     queryset = User.objects.all()
+
     def post(self,request,*args,**kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -64,10 +77,19 @@ class SignUpView(generics.CreateAPIView):
                     "phone_number":user.phone_number,
                     "otp_secret":secret_token
                 }
-            print(otp_code)
             return Response(data=data,status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema_view(
+    patch=extend_schema(
+        summary="Verify a user",
+        request=VerifyCodeSerializer,
+        responses={
+            200:TokenResponseSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
 class VerifyView(generics.UpdateAPIView):
    serializer_class = VerifyCodeSerializer
    permission_classes = [AllowAny,]
@@ -101,6 +123,16 @@ class VerifyView(generics.UpdateAPIView):
         TokenService.add_token_to_redis(user.id,tokens['refresh'],TokenType.REFRESH,expire_time=timedelta(days=3))
         return Response(tokens,status=status.HTTP_200_OK)
 
+@extend_schema_view(
+    post = extend_schema(
+        summary="Login a user",
+        request=LoginUserSerializer,
+        responses={
+            200:TokenResponseSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
 class LoginView(generics.CreateAPIView):
     serializer_class = LoginUserSerializer
     permission_classes = [AllowAny,]
@@ -127,6 +159,8 @@ class LoginView(generics.CreateAPIView):
         request=BuyerSerializer
     )
 )
+
+
 class UsersMeView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     http_method_names = ['get','patch']
@@ -161,6 +195,17 @@ class UsersMeView(generics.RetrieveUpdateAPIView):
         serializer.save()
         return Response(serializer.data)
 
+
+@extend_schema_view(
+    patch=extend_schema(
+        summary="Update user information",
+        request=ChangePasswordSerializer,
+        responses={
+            200:TokenResponseSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated,]
     serializer_class = ChangePasswordSerializer
@@ -176,3 +221,110 @@ class ChangePasswordView(APIView):
             tokens = UserServie.create_tokens(user)
             return Response(tokens)
         return Response(_("Eski Parol Xato!"))
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Forgot Password to User",
+        request=ForgotPasswordRequestSerializer,
+        responses={
+            200:ForgotPasswordResponseSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
+class ForgotPasswordView(generics.CreateAPIView):
+    serializer_class = ForgotPasswordRequestSerializer
+    permission_classes = [AllowAny,]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        if redis_conn.exists(f"{email}:otp_secret"):
+            secret_token = redis_conn.get(f"{email}:otp_secret")
+        else:
+            otp_code,secret_token = generate_otp(phone_number_or_email=email)
+            send_email_status=send_email(email=email,otp_code=otp_code)
+            print(send_email_status)
+            if send_email_status==400:
+                # redis_conn.delete(f"{email}:otp_secret")
+                redis_conn.delete(f"{email}:otp")
+                raise ValidationError({"detail":"Not Send Otp Code!"})
+        data = {
+            "email":email,
+            "otp_secret":secret_token
+        }
+
+        return Response(data=data,status=status.HTTP_200_OK)
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Forgot password verify a user",
+        request=ForgotPasswordVerifyRequestSerializer,
+        responses={
+            200:ForgotPasswordVerifyResponseSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
+class ForgotVerifyView(generics.CreateAPIView):
+    serializer_class = ForgotPasswordVerifyRequestSerializer
+    permission_classes = [AllowAny,]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        otp_secret = kwargs.get('otp_secret')
+        email = serializer.validated_data['email']
+        otp_code = serializer.validated_data['otp_code']
+        users = User.objects.filter(email=email)
+        if not users.exists():
+            raise ValidationError("Active user not found!")
+
+        check_otp(phone_number_or_email=email,otp_code=otp_code,otp_secret=otp_secret)
+        redis_conn.delete(f'{email}:otp')
+        token_hash = make_password(token_urlsafe())
+        redis_conn.set(token_hash,email,ex=2*60*60)
+        return Response({'token':token_hash},status=status.HTTP_200_OK)
+
+@extend_schema_view(
+    patch=extend_schema(
+        summary="Reset password",
+        request=ResetPasswordRequestSerializer,
+        responses={
+            200:TokenResponseSerializer,
+            400:ValidationErrorSerializer
+        }
+    )
+)
+class ResetPasswordView(generics.UpdateAPIView):
+    serializer_class = ResetPasswordRequestSerializer
+    permission_classes = [AllowAny,]
+    http_method_names = ['patch']
+
+    def patch(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token_hash = serializer.validated_data['token']
+        email = redis_conn.get(token_hash)
+
+        if not email:
+            redis_conn.delete(token_hash)
+            raise ValidationError("Token Yaroqsiz!")
+
+        users = User.objects.filter(email=email.decode(),is_active=True)
+        if not users.exists():
+            redis_conn.delete(token_hash)
+            return Response({"detail":"User not Found"},status=status.HTTP_404_NOT_FOUND)
+
+        password = serializer.validated_data['password']
+        user = users.first()
+        user.set_password(password)
+        user.save()
+
+        update_session_auth_hash(request,user)
+        tokens = UserServie.create_tokens(user=user)
+        redis_conn.delete(token_hash)
+        return Response(tokens,status=status.HTTP_200_OK)
+
