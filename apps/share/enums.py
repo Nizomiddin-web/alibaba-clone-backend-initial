@@ -22,4 +22,7 @@ class PolicyNameEnum(BaseEnum):
     BUYER_POLICY = "buyer_policy"
     SELLER_POLICY = "seller_policy"
     ADMIN_POLICY = "admin_policy"
-    
+
+class TokenType(Enum):
+    ACCESS = "access"
+    REFRESH = "refresh"

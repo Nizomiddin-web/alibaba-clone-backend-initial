@@ -1,30 +1,15 @@
-import datetime
-import enum
-
-import uuid
-from secrets import token_urlsafe
 from typing import Union
-
-import redis
-from decouple import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
 
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from share.utils import get_redis_conn
+from share.enums import TokenType
+from share.services import TokenService
 
-
-class TokenType(enum.Enum):
-    ACCESS = "access"
-    REFRESH = "refresh"
-
-REDIS_HOST = config('REDIS_HOST',None)
-REDIS_PORT = config('REDIS_PORT',None)
-REDIS_DB = config('REDIS_DB',None)
 
 User = get_user_model()
 
@@ -46,41 +31,34 @@ class UserServie:
        return user
 
     @classmethod
-    def create_tokens(cls, user: User, access: str = None, refresh: str = None) -> dict[str, str]:
+    def create_tokens(cls, user: User, access: str = None, refresh: str = None, is_force_add_to_redis: bool = False) -> dict[str, str]:
         if not access or not refresh:
             refresh_token = RefreshToken.for_user(user)
-            access_token =  str(getattr(refresh_token,'access_token'))
-            refresh_token = str(refresh_token)
-        else:
-            refresh_token = refresh
-            access_token = access
+            access =  str(getattr(refresh_token,'access_token'))
+            refresh = str(refresh_token)
 
+        valid_access_tokens = TokenService.get_valid_tokens(
+            user_id=user.id,token_type=TokenType.ACCESS
+        )
+        if valid_access_tokens or is_force_add_to_redis:
+            TokenService.add_token_to_redis(
+                user_id=user.id,
+                token=access,
+                token_type=TokenType.ACCESS,
+                lifetime=settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME")
+            )
+        valid_refresh_tokens = TokenService.get_valid_tokens(
+            user_id=user.id,
+            token_type=TokenType.REFRESH
+        )
+        if valid_refresh_tokens or is_force_add_to_redis:
+            TokenService.add_token_to_redis(
+                user_id=user.id,
+                token=refresh,
+                token_type=TokenType.REFRESH,
+                lifetime=settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME")
+            )
         return {
-            "access":access_token,
-            "refresh":refresh_token
+            "access":access,
+            "refresh":refresh
         }
-
-
-class TokenService:
-    @classmethod
-    def get_valid_tokens(cls, user_id: uuid.UUID, token_type: TokenType) -> set:
-        redis_conn = get_redis_conn()
-        return redis_conn.get(f"{user_id}:{token_type.value}")
-
-    @classmethod
-    def add_token_to_redis(
-            cls,
-            user_id: uuid.UUID,
-            token: str,
-            token_type: TokenType,
-            expire_time: datetime.timedelta,
-    ) -> None:
-        redis_conn = get_redis_conn()
-        key = f"{user_id}:{token_type.value}"
-        redis_conn.set(key,token,ex=expire_time)
-
-    @classmethod
-    def delete_tokens(cls, user_id: uuid.UUID, token_type: TokenType) -> None:
-        redis_conn = get_redis_conn()
-        key = f"{user_id}:{token_type.value}"
-        redis_conn.delete(key)

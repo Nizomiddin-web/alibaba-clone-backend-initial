@@ -1,4 +1,5 @@
 from datetime import timedelta
+from os import access
 from secrets import token_urlsafe
 
 from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -11,8 +12,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils.translation import gettext as _
-from share.enums import UserRole
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from share.enums import UserRole, TokenType
 from share.permissions import GeneratePermissions
+from share.services import TokenService
 from share.utils import OTPService, check_otp
 from user.models import BuyerUser, Group, SellerUser
 from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSerializer, \
@@ -23,7 +27,7 @@ from user.serializers import UserSerializer, VerifyCodeSerializer, LoginUserSeri
 from share.utils import generate_otp,get_redis_conn
 from rest_framework import generics
 
-from user.services import UserServie, TokenService, TokenType
+from user.services import UserServie
 from user.tasks import send_email
 
 User = get_user_model()
@@ -165,7 +169,7 @@ class UsersMeView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     http_method_names = ['get','patch']
     queryset = User.objects.all()
-    permission_classes = [GeneratePermissions]
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         user = self.request.user
@@ -178,6 +182,7 @@ class UsersMeView(generics.RetrieveUpdateAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         user = request.user
+        print(user)
         group = user.groups.first()
         if group and group.name=='seller':
             seller = SellerUser.objects.get(user=user)
@@ -328,3 +333,19 @@ class ResetPasswordView(generics.UpdateAPIView):
         redis_conn.delete(token_hash)
         return Response(tokens,status=status.HTTP_200_OK)
 
+@extend_schema_view(
+    post=extend_schema(
+        summary="Log out a user",
+        request=None,
+        responses={
+            200:ValidationErrorSerializer,
+            401:ValidationErrorSerializer
+        }
+    )
+)
+class LogOutView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated,]
+    @extend_schema(responses=None)
+    def post(self, request, *args, **kwargs):
+        UserServie.create_tokens(request.user,access='fake_token',refresh='fake_token',is_force_add_to_redis=True)
+        return Response({'detail':"Muvafaqiyatli chiqildi!"})

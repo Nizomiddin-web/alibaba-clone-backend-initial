@@ -19,7 +19,6 @@ class CustomModelBackend(ModelBackend):
         except get_user_model().DoesNotExist:
             return None
         if user.check_password(password) and self.user_can_authenticate(user):
-            print(user)
             return user
 
     def user_can_authenticate(self, user):
