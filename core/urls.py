@@ -35,6 +35,7 @@ urlpatterns = [
 
             #Apps path
             path("users/",include('user.urls')),
+            path("products/",include('product.urls')),
             # path("share/",include('share.urls')),
 
             #Swagger path
