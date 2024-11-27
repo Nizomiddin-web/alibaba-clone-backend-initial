@@ -42,6 +42,8 @@ class TestProductCreateAPI:
         payload['seller'] = self.user.id
 
         response = self.client.post(self.url, data=payload, format='json')
+        print(self.user.is_authenticated)
+        print(self.user.groups.all())
         assert response.status_code == expected_status
         if response.status_code == status.HTTP_201_CREATED:
             assert response.json()['title'] == payload['title']

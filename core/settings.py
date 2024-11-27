@@ -166,7 +166,7 @@ REST_FRAMEWORK = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    'user.backends.CustomModelBackend'
+     'user.backends.CustomModelBackend'
 ]
 
 SPECTACULAR_SETTINGS = {

@@ -21,6 +21,7 @@ class CustomModelBackend(ModelBackend):
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
 
+
     def user_can_authenticate(self, user):
         return user.is_active and user.is_verified
 
@@ -37,7 +38,7 @@ class CustomModelBackend(ModelBackend):
 
     def _get_group_permissions(self, user_obj):
         user_groups_field = get_user_model()._meta.get_field("groups")
-        user_groups_query = "custom_group__%s" % user_groups_field.related_query_name()
+        user_groups_query = "groups__%s" % user_groups_field.related_query_name()
         all_group_permissions = Permission.objects.filter(**{user_groups_query: user_obj})
         for group in user_obj.groups.filter(is_active=True):
             for policy in group.policies.filter(is_active=True):

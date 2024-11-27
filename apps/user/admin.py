@@ -7,7 +7,8 @@ from user.models import User, Group, Policy, BuyerUser
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['email','phone_number']
+    list_display = ['id','first_name','email','phone_number']
+    list_display_links = ['id','email']
 
 @admin.register(BuyerUser)
 class BuyerUserAdmin(admin.ModelAdmin):

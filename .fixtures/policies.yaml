@@ -41,6 +41,18 @@ seller_policy:
   - product.add_product
   - product.change_product
   - product.delete_product
+  - product.view_color
+  - product.add_color
+  - product.change_color
+  - product.delete_color
+  - product.view_size
+  - product.add_size
+  - product.change_size
+  - product.delete_size
+  - product.view_image
+  - product.add_image
+  - product.change_image
+  - product.delete_image
 
 buyer_policy:
   - user.view_buyeruser
@@ -52,3 +64,6 @@ buyer_policy:
   - user.view_user_me
   - product.view_category
   - product.view_product
+  - product.view_color
+  - product.view_size
+  - product.view_image
