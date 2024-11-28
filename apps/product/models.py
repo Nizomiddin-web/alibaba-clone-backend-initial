@@ -27,9 +27,10 @@ class Category(BaseModel):
         verbose_name_plural='Categories'
         ordering = ['-created_at']
 
-
     def __str__(self):
         return self.name
+
+
 
 class Color(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid4)

@@ -31,7 +31,7 @@ class Group(models.Model):
    name = models.CharField(max_length=255)
    policies = models.ManyToManyField(Policy,blank=True,related_name='groups')
    permissions = models.ManyToManyField(Permission,blank=True,related_name='groups')
-   is_active = models.BooleanField(default=False)
+   is_active = models.BooleanField(default=True)
    created_by = models.ForeignKey('User',null=True,blank=True,on_delete=models.SET_NULL,related_name='created_groups')
    created_at = models.DateTimeField(auto_now_add=True)
    updated_at = models.DateTimeField(auto_now=True)

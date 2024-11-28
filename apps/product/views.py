@@ -1,4 +1,5 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular import openapi
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiExample
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet

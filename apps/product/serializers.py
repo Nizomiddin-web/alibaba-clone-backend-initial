@@ -42,18 +42,20 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
-        colors = ColorSerializer(many=True)
-        sizes = SizeSerializer(many=True)
-        # uploaded_images = serializers.ListField(
-        #     child=serializers.ImageField(), required=False,write_only=True
-        # )
+        price = serializers.DecimalField(max_digits=10,decimal_places=2,coerce_to_string=False)
+        colors = ColorSerializer(many=True, required=False)
+        images = ImageSerializer(many=True,read_only=True)
+        sizes = SizeSerializer(many=True, required=False)
+        uploaded_images = serializers.ListField(
+            child=serializers.ImageField(), required=False,write_only=True
+        )
         class Meta:
             model = Product
             fields = [
                 'id', 'seller', 'title', 'description', 'price', 'quantity', 'category',
-                'colors', 'sizes', 'views', 'created_at'
+                'colors', 'sizes', 'uploaded_images','images', 'views', 'created_at'
             ]
-            read_only_fields = ['id','seller', 'views', 'created_at']
+            read_only_fields = ['id','seller', 'views', 'created_at','images']
 
         def validate_price(self,price):
             if price<0:
@@ -62,32 +64,27 @@ class ProductCreateSerializer(serializers.ModelSerializer):
 
 
         def create(self, validated_data):
-            print(validated_data)
-            colors_data = validated_data.pop('colors')
-            sizes_data = validated_data.pop('sizes')
-            # uploaded_images = validated_data.pop('uploaded_images',[])
+            colors_data = validated_data.pop('colors',[])
+            sizes_data = validated_data.pop('sizes',[])
+            uploaded_images = validated_data.pop('uploaded_images',[])
             seller = self.context['request'].user
 
-            print(colors_data)
-            print(sizes_data)
-            # print(uploaded_images)
-            print(seller)
             product = Product.objects.create(seller=seller, **validated_data)
 
             for color_data in colors_data:
                 color, _ = Color.objects.get_or_create(**color_data)
-                print(color)
                 product.colors.add(color)
 
             for size_data in sizes_data:
                 size, _ = Size.objects.get_or_create(**size_data)
-                print(size)
                 product.sizes.add(size)
 
-            # for image in uploaded_images:
-            #     Image.objects.create(product_id=product,image=image)
+            for image in uploaded_images:
+                Image.objects.create(product=product,image=image)
 
             return product
+
+
 
 
 class ProductUpdateSerializer(serializers.ModelSerializer):
