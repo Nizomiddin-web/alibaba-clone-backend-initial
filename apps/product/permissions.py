@@ -1,9 +1,9 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class IsProductOwner(BasePermission):
+class IsProductSeller(BasePermission):
     def has_object_permission(self, request, view, obj):
-        return obj.owner==request.user
+        return obj.seller==request.user
 
 class HasCategoryPermission(BasePermission):
     def has_permission(self, request, view):

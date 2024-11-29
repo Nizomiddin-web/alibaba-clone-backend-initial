@@ -1,6 +1,7 @@
 from drf_spectacular import openapi
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiExample
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import filters
@@ -8,8 +9,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from product.filters import ProductFilters
 from product.models import Category, Product, Color, Size, Image
-from product.permissions import IsProductOwner, HasCategoryPermission
-from product.serializers import CategorySerializer, ProductSerializer, ProductUpdateSerializer, ProductCreateSerializer
+from product.permissions import HasCategoryPermission, IsProductSeller
+from product.serializers import CategorySerializer, ProductSerializer, ProductUpdateSerializer, ProductCreateSerializer, \
+    ProductDetailSerializer
 from share.permissions import GeneratePermissions
 
 
@@ -82,6 +84,7 @@ class CategoryViewSet(GeneratePermissions,ModelViewSet):
 class ProductViewSet(GeneratePermissions,ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [IsProductSeller,]
     filter_backends = [filters.SearchFilter,DjangoFilterBackend]
     filterset_class = ProductFilters
     search_fields = ['title','description']
@@ -91,4 +94,11 @@ class ProductViewSet(GeneratePermissions,ModelViewSet):
             return ProductUpdateSerializer
         elif self.action == 'create':
             return ProductCreateSerializer
+        elif self.action == 'retrieve':
+            return ProductDetailSerializer
         return super().get_serializer_class()
+
+    def get_permissions(self,*args,**kwargs):
+        if self.action == 'retrieve':
+            return [IsAuthenticated()]
+        return super().get_permissions(*args,**kwargs)

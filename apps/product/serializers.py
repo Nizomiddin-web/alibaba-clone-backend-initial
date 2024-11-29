@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from product.models import Category, Product, Color, Size, Image
-from user.serializers import SellerSerializer, UserSerializer
+from user.serializers import  UserSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -84,6 +84,15 @@ class ProductCreateSerializer(serializers.ModelSerializer):
 
             return product
 
+class ProductDetailSerializer(serializers.ModelSerializer):
+    colors = ColorSerializer(many=True,read_only=True)
+    sizes = SizeSerializer(many=True,read_only=True)
+    images = ImageSerializer(many=True,read_only=True)
+    category = CategorySerializer(read_only=True)
+    seller = UserSerializer(read_only=True)
+    class Meta:
+        model=Product
+        fields = ['id','category','seller','title','description','price','images','colors','sizes','quantity','views']
 
 
 
