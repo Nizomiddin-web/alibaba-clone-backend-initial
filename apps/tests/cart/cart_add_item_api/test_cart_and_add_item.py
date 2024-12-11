@@ -62,6 +62,7 @@ class TestCartViews:
 
     def test_get_items_view_authenticated(self):
         response = self.client.get(self.url_get_items)
+        print(response.data)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 2
         assert any(item['product']['title'] == 'product1' for item in response.data)
@@ -85,11 +86,16 @@ class TestCartViews:
         (9, 9),
     ])
     def test_add_item_view_authenticated(self, quantity, expected_quantity):
+        print(quantity,"aniq qiymat")
+        print(expected_quantity,"expected")
+        print(self.product1.id)
         response = self.client.post(self.url_add_item, {
             'product_id': str(self.product1.id),
             'quantity': quantity
         })
         assert response.status_code == status.HTTP_201_CREATED
+        print(response.data)
+        print(expected_quantity)
         assert response.data[1]['quantity'] == expected_quantity
 
     def test_add_item_view_insufficient_stock(self):

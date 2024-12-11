@@ -12,7 +12,7 @@ class OrderFactory(factory.django.DjangoModelFactory):
 
     id = factory.LazyFunction(uuid4)
     user = factory.SubFactory('tests.factories.user_factory.UserFactory')
-    payment_method = 'card'
+    payment_method = 'cart'
     status = 'pending'
     address_line_1 = factory.LazyAttribute(lambda o: fake.address())
     address_line_2 = factory.LazyAttribute(lambda o: fake.address())

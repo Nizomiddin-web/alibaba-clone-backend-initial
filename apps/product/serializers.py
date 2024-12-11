@@ -15,6 +15,7 @@ class CategorySerializer(serializers.ModelSerializer):
         return CategorySerializer(obj.children.all(),many=True).data
 
 class ProductSerializer(serializers.ModelSerializer):
+    price = serializers.DecimalField(max_digits=10,decimal_places=2,coerce_to_string=False)
     category = CategorySerializer()
     seller = UserSerializer()
     class Meta:

@@ -26,6 +26,14 @@ admin_policy:
   - user.view_all_users
   - user.view_user
   - user.view_user_me
+  - user.view_cart
+  - user.add_cart
+  - cart.change_cart
+  - cart.delete_cart
+  - cart.view_cartitem
+  - cart.add_cartitem
+  - cart.change_cartitem
+  - cart.delete_cartitem
 
 
 seller_policy:
@@ -53,6 +61,13 @@ seller_policy:
   - product.add_image
   - product.change_image
   - product.delete_image
+  - cart.change_cart
+  - cart.delete_cart
+  - cart.view_cartitem
+  - cart.add_cartitem
+  - cart.change_cartitem
+  - cart.delete_cartitem
+
 
 buyer_policy:
   - user.view_buyeruser
@@ -67,3 +82,9 @@ buyer_policy:
   - product.view_color
   - product.view_size
   - product.view_image
+  - cart.change_cart
+  - cart.delete_cart
+  - cart.view_cartitem
+  - cart.add_cartitem
+  - cart.change_cartitem
+  - cart.delete_cartitem

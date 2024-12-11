@@ -58,7 +58,7 @@ class TestCheckoutCreateView:
         cart_item_factory(cart=self.cart, product=self.product2, quantity=2)
 
         self.data = {
-            "payment_method": "card",
+            "payment_method": "cart",
             "country_region": "Uzbekistan",
             "city": "New York",
             "state_province_region": "NY",
@@ -74,7 +74,7 @@ class TestCheckoutCreateView:
         response = self.client.post(self.url, data=self.data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data['status'] == 'pending'
-        assert response.data['payment_method'] == 'card'
+        assert response.data['payment_method'] == 'cart'
         assert response.data['country_region'] == 'Uzbekistan'
         assert len(response.data['order_items']) == 2
 
