@@ -1,6 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from cart.models import Cart, CartItem
 from cart.serializers import CartDetailItemListSerializer, CartItemRequestSerializer
@@ -70,3 +71,48 @@ class CartItemUpdateView(GeneratePermissions,generics.UpdateAPIView):
         cart_items = cart.cartItems.all().order_by('product')
         serializer = CartDetailItemListSerializer(instance=cart_items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CartGetTotalView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request,*args,**kwargs):
+        cart = Cart.objects.filter(user=request.user).first()
+        if not cart:
+            data = {
+                "total_items":0,
+                "total_quantity":0,
+                "total_price":0
+            }
+            return Response(data=data)
+        total_items = cart.cartItems.count()
+        total_quantity=0
+        total_price=0
+        for cart_item in cart.cartItems.all():
+            total_quantity+=cart_item.quantity
+            total_price+=cart_item.product.price*cart_item.quantity
+        data = {
+            "total_items":total_items,
+            "total_quantity":total_quantity,
+            "total_price":float(total_price)
+        }
+        return Response(data=data)
+
+class CartItemDeleteView(GeneratePermissions,APIView):
+    permission_classes = [IsAuthenticated,]
+    def delete(self,request,product_id,*args,**kwargs):
+         product = Product.objects.filter(id=product_id).first()
+         if not product:
+             return Response(data={"detail":"Mahsulot topilmadi"},status=status.HTTP_404_NOT_FOUND)
+         cart = Cart.objects.get(user=request.user)
+         cart_item=CartItem.objects.get(product=product,cart=cart)
+         cart_item.delete()
+         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class CartEmptyView(GeneratePermissions,APIView):
+    permission_classes = [IsAuthenticated,]
+    def delete(self,request):
+        cart = Cart.objects.filter(user=request.user).first()
+        if not cart:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        cart.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

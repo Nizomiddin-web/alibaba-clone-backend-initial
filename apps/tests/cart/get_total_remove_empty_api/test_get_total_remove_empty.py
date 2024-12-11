@@ -32,6 +32,7 @@ class TestCartViews:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['total_items'] == 2
         assert response.data['total_quantity'] == 3
+        print(type(response.data['total_price']))
         assert response.data['total_price'] == pytest.approx(40.67)
 
     def test_get_cart_total_view_no_cart(self, api_client):
