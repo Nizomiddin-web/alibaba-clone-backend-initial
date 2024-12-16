@@ -57,4 +57,6 @@ class OrderDetailApiView(GeneratePermissions,RetrieveAPIView):
 class OrderHistoryApiView(GeneratePermissions,ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderCheckoutResponseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CheckOrderUser,]
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
