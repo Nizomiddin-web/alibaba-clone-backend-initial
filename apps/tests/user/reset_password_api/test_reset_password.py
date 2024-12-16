@@ -106,7 +106,6 @@ def test_forgot_password(request, forgot_password_data, api_client, mocker):
 
     client = api_client()
     resp = client.post('/api/users/password/forgot/', data=return_data['req_json'], format='json')
-    print(resp.content)
     assert resp.status_code == return_data['status_code']
 
     if resp.status_code == 200:
@@ -214,7 +213,6 @@ def test_forgot_password_verify(forgot_password_verify_data, api_client, mocker)
         f'/api/users/password/forgot/verify/{otp_secret}/',
         data=return_data['req_json'], format='json'
     )
-    print(resp.content)
     assert resp.status_code == return_data['status_code']
 
     if resp.status_code == 200:

@@ -8,11 +8,12 @@ User = get_user_model()
 @pytest.fixture
 def signup_data(request, user_factory, mocker):
     password = 'jsh767jHJHdskd'
+    phone_number = "+998911110011"
     user = user_factory.create(password=password, is_verified=False)
     resp = {
         'first_name': user.first_name,
         'last_name': user.last_name,
-        'phone_number': user.phone_number,
+        'phone_number': phone_number,
         'email': user.email,
         'user_trade_role': 'buyer',
         'gender': user.gender,
@@ -247,17 +248,11 @@ def test_signup(signup_data, api_client, mocker):
     mocker.patch('user.views.generate_otp', return_value=('123456', '1v8z0Of5sJ0XI3cpNcHWrofrHZfY0oGJZbvGW4siTs0'))
     mocker.patch('user.views.send_email', return_value=email_status)
 
-
-    # mocker.patch('share.utils.OTPService.get_redis_conn', redis_conn)
-    # mocker.patch('share.utils.OTPService.generate_otp', return_value=('123456', '1v8z0Of5sJ0XI3cpNcHWrofrHZfY0oGJZbvGW4siTs0'))
-    # mocker.patch('share.utils.SendEmailService.send_email', return_value=email_status)
-
     resp = client.post('/api/users/register/', data=req_json, format='json')
 
     """
     Responsedan qaytgan status code, kutilayotgan status kodga teng ekanligi tekshirish.
     """
-
     assert resp.status_code == status_code
 
     if status_code == 201:

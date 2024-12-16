@@ -5,12 +5,10 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apt clean && apt update && apt install curl netcat vim gettext -y
 
-WORKDIR /my_code
-COPY . /my_code/
+WORKDIR /ecommerce
+COPY . /ecommerce/
 
 RUN pip install -r requirements.txt
-
-RUN #cp .env.example .env
 
 COPY .deploy/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
