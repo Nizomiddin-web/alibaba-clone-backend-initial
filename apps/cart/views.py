@@ -23,7 +23,7 @@ class CartDetailItemListView(GeneratePermissions,generics.ListAPIView):
 class CartAddItemView(GeneratePermissions,generics.CreateAPIView):
     serializer_class = CartItemRequestSerializer
     queryset = CartItem.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -114,5 +114,5 @@ class CartEmptyView(GeneratePermissions,APIView):
         cart = Cart.objects.filter(user=request.user).first()
         if not cart:
             return Response(status=status.HTTP_204_NO_CONTENT)
-        cart.delete()
+        cart.cartItems.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,6 +1,7 @@
 import pytest
 from rest_framework import status
 from core import settings
+from order.models import Order
 
 
 @pytest.mark.order(1)

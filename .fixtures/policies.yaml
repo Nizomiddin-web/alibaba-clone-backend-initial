@@ -88,3 +88,7 @@ buyer_policy:
   - cart.add_cartitem
   - cart.change_cartitem
   - cart.delete_cartitem
+  - order.view_order
+  - order.add_order
+  - order.view_orderitem
+  - order.add_orderitem
