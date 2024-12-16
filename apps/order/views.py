@@ -17,7 +17,7 @@ from share.permissions import GeneratePermissions
 class OrderCheckoutView(GeneratePermissions,CreateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderCheckoutRequestSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,CheckOrderUser]
 
     def create(self, request, *args, **kwargs):
         cart = Cart.objects.filter(user=request.user).first()

@@ -15,8 +15,7 @@ class CountryChoice(models.TextChoices):
 class PaymentChoice(models.TextChoices):
     CLICK = "Click","Click"
     PAYME = "Payme","Payme"
-    CARD = "Card","Card"
-    CART = "cart","Cart"
+    CARD = "card","Card"
     PAYPAL = "Paypal","Paypal"
 
 class StatusChoice(models.TextChoices):
