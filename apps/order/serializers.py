@@ -8,7 +8,15 @@ from rest_framework import serializers
 
 from cart.models import Cart
 from order.models import PaymentChoice, CountryChoice, Order, OrderItem
+from product.serializers import ProductSerializer
 
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+        extra_kwargs = {'order':{'write_only':True}}
 
 class OrderCheckoutRequestSerializer(serializers.ModelSerializer):
     payment_method = serializers.CharField()
@@ -37,6 +45,7 @@ class OrderCheckoutRequestSerializer(serializers.ModelSerializer):
 
 
 class OrderCheckoutResponseSerializer(serializers.ModelSerializer):
+    order_items = OrderItemSerializer(many=True)
     shipping_name = serializers.CharField(source='shipping.name',default=None)
     shipping_time = serializers.CharField(source='shipping.time',default=None)
     shipping_price = serializers.CharField(source='shipping.price',default=None)

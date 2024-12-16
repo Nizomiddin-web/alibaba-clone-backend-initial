@@ -74,6 +74,7 @@ class Order(models.Model):
         return f"Order by: {self.user} # Id: {self.id}"
 
 class OrderItem(models.Model):
+    id = models.UUIDField(primary_key=True,default=uuid4,editable=True)
     product = models.ForeignKey(Product,on_delete=models.SET_NULL,null=True)
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="order_items")
     quantity = models.PositiveIntegerField(default=0)

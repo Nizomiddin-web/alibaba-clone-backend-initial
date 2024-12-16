@@ -1,7 +1,7 @@
 
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -40,3 +40,21 @@ class OrderCheckoutView(GeneratePermissions,CreateAPIView):
             )
         serializer = OrderCheckoutResponseSerializer(instance=order)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
+
+class OrderListApiView(GeneratePermissions,ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderCheckoutResponseSerializer
+    permission_classes = [CheckOrderUser]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+class OrderDetailApiView(GeneratePermissions,RetrieveAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderCheckoutResponseSerializer
+    permission_classes = [IsAuthenticated,]
+
+class OrderHistoryApiView(GeneratePermissions,ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderCheckoutResponseSerializer
+    permission_classes = [IsAuthenticated]
