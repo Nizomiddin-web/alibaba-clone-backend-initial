@@ -52,7 +52,7 @@ class OrderListApiView(GeneratePermissions,ListAPIView):
 class OrderDetailApiView(GeneratePermissions,RetrieveAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderCheckoutResponseSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [CheckOrderUser,]
 
 class OrderHistoryApiView(GeneratePermissions,ListAPIView):
     queryset = Order.objects.all()

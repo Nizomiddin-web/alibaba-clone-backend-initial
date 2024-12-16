@@ -5,6 +5,6 @@ from order.views import OrderCheckoutView, OrderListApiView, OrderDetailApiView,
 urlpatterns = [
     path('checkout/',OrderCheckoutView.as_view(),name='order-checkout'),
     path('',OrderListApiView.as_view(),name='order-list'),
-    path('<int:order_id>/',OrderDetailApiView.as_view(),name='order-list'),
+    path('<uuid:pk>/',OrderDetailApiView.as_view(),name='order-list'),
     path('history/',OrderHistoryApiView.as_view(),name='order-history'),
 ]
