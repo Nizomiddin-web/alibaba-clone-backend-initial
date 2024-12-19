@@ -1,7 +1,7 @@
 from django.urls import path
 
 from payment.views import PaymentInitialApiView, PaymentConfirmApiView, PaymentCreateWithLinkApiView, \
-    PaymentSuccessApiView, PaymentCancelApiView
+    PaymentSuccessApiView, PaymentCancelApiView, PaymentStatusApiView
 
 urlpatterns = [
     path('<uuid:id>/initiate/',PaymentInitialApiView.as_view(),name='payment-initiate'),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('<uuid:id>/create/link/',PaymentCreateWithLinkApiView.as_view(),name='payment-create-link'),
     path('<uuid:id>/success/',PaymentSuccessApiView.as_view(),name='payment-success'),
     path('<uuid:id>/cancel/',PaymentCancelApiView.as_view(),name='payment-cancel'),
+    path('<uuid:id>/status/',PaymentStatusApiView.as_view(),name='payment-cancel'),
 ]

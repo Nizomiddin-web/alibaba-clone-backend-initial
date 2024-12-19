@@ -2,6 +2,8 @@ from django.utils.datetime_safe import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from order.models import Order
+
 
 class PaymentInitialSerializer(serializers.Serializer):
     card_number = serializers.CharField(max_length=16)
@@ -16,3 +18,8 @@ class PaymentInitialSerializer(serializers.Serializer):
 
 class PaymentConfirmApiRequestSerializer(serializers.Serializer):
     client_secret = serializers.CharField(max_length=200)
+
+class OrderStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['status']

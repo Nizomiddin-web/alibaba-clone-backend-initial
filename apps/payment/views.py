@@ -2,7 +2,7 @@ from decouple import config, Choices
 from django.shortcuts import render
 import stripe
 from rest_framework import status
-from rest_framework.generics import UpdateAPIView, get_object_or_404
+from rest_framework.generics import UpdateAPIView, get_object_or_404, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +11,7 @@ from datetime import timedelta
 from cart.models import Cart
 from order.models import Order, StatusChoice
 from order.permissions import CheckOrderUser
-from payment.serializers import PaymentInitialSerializer, PaymentConfirmApiRequestSerializer
+from payment.serializers import PaymentInitialSerializer, PaymentConfirmApiRequestSerializer, OrderStatusSerializer
 from share.services import ClientSecretService
 
 stripe.api_key = config('STRIPE_TEST_SECRET_KEY')
@@ -149,3 +149,9 @@ class PaymentCancelApiView(APIView):
         order.status=StatusChoice.CANCELED
         order.save()
         return  Response(data={"detail":"Order successfully canceled."})
+
+class PaymentStatusApiView(RetrieveAPIView):
+    queryset = Order.objects.all()
+    permission_classes = [CheckOrderUser,]
+    serializer_class = OrderStatusSerializer
+    lookup_field = 'id'

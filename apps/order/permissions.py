@@ -5,4 +5,5 @@ class CheckOrderUser(BasePermission):
          group = request.user.groups.first()
          return bool(request.user and request.user.is_authenticated and group and group.name=='buyer')
 
-
+    def has_object_permission(self, request, view, obj):
+        return request.user==obj.user
