@@ -38,6 +38,7 @@ urlpatterns = [
             path("products/",include('product.urls')),
             path("cart/",include('cart.urls')),
             path("orders/",include('order.urls')),
+            path("payment/",include('payment.urls')),
             # path("share/",include('share.urls')),
 
             #Swagger path

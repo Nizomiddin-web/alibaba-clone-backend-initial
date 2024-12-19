@@ -10,6 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(os.path.join(BASE_DIR,'apps'))
 SECRET_KEY = config('SECRET_KEY',default="hjg^&%**%%^*GHVGJHGKJGKH")
 
+STRIPE_TEST_PUBLIC_KEY = config('STRIPE_TEST_PUBLIC_KEY')
+STRIPE_TEST_SECRET_KEY = config('STRIPE_TEST_SECRET_KEY')
+
 DEBUG = config('DEBUG',default=False,cast=bool)
 AUTH_USER_MODEL = 'user.User'
 
@@ -36,7 +39,8 @@ LOCAL_APPS = [
     'share',
     'product',
     'cart',
-    'order'
+    'order',
+    'payment'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + LOCAL_APPS

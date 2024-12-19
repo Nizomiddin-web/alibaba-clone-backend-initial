@@ -20,9 +20,10 @@ class PaymentChoice(models.TextChoices):
 
 class StatusChoice(models.TextChoices):
     PENDING = "pending","Pending"
-    SUCCESS = "success","Success"
+    PAID = "paid","Paid"
     CANCELED = "canceled","Canceled"
     DELIVERED = "delivered","Delivered"
+    SHIPPED = 'shipped','Shipped'
 
 # class Address(models.Model):
 #     user = models.ForeignKey(User,on_delete=models.CASCADE)

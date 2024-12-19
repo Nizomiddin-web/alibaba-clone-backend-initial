@@ -95,7 +95,7 @@ class TestPaymentCreateView:
         self.order.save()
 
         response = self.client.patch(self.url, data=self.valid_payload, format='json')
-
+        print(response.json())
         assert response.status_code == expected_status_code
 
         if expected_message:
@@ -122,6 +122,7 @@ class TestPaymentCreateView:
         }
 
         response = self.client.patch(self.url, data=incomplete_payload, format='json')
-
+        print(response.json())
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+
         assert response.data['detail'] == 'Card details are incomplete.'
