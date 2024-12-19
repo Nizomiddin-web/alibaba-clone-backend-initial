@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(os.path.join(BASE_DIR,'apps'))
 SECRET_KEY = config('SECRET_KEY',default="hjg^&%**%%^*GHVGJHGKJGKH")
 
-STRIPE_TEST_PUBLIC_KEY = config('STRIPE_TEST_PUBLIC_KEY')
-STRIPE_TEST_SECRET_KEY = config('STRIPE_TEST_SECRET_KEY')
+STRIPE_TEST_PUBLIC_KEY = 'pk_test_51QWv0e00NikahEaemlzP6IkJ9MfhsxJo5O1ziNLMKo5CAnRVj29PtMl5XvH3jMVqxBBMOdzPKQWEptohvcCIBexF00hj0o7Xzs'
+STRIPE_TEST_SECRET_KEY = 'sk_test_51QWv0e00NikahEaenNdrYSUseNBP3W5dX20Ypy7iY7bzBIzbxcGI2jlyiXaYBPVEfPwMUDUcD2cGplfSCBp5kjRw008fZcT5Tx'
 
 DEBUG = config('DEBUG',default=False,cast=bool)
 AUTH_USER_MODEL = 'user.User'
