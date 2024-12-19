@@ -96,3 +96,25 @@ class PaymentConfirmApiView(APIView):
             return Response(data={"error":str(e)},status=status.HTTP_400_BAD_REQUEST)
         except stripe.error.StripeError as e:
             return Response(data={"error":str(e)},status=status.HTTP_400_BAD_REQUEST)
+
+
+class PaymentCreateWithLinkApiView(APIView):
+    permission_classes = [IsAuthenticated,CheckOrderUser]
+    def patch(self,request,id):
+        order = get_object_or_404(Order,id=id)
+        if order.status==StatusChoice.CANCELED:
+            return Response(data={"detail":"Order already canceled."},status=status.HTTP_400_BAD_REQUEST)
+        elif order.status!=StatusChoice.PENDING:
+            return Response(data={"detail":"Order cannot be updated."},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                line_items = [{"price":order.amount,"quantity":sum([item.quantity for item in order.order_items.all()])}],
+                mode="payment",
+                success_url = request.build_absolute_uri('/api/payment/'+str(order.id) + '/success/'),
+                cancel_url = request.build_absolute_uri('/api/payment/'+str(order.id)+'/cancel/')
+            )
+            order.transaction_id = checkout_session['id']
+            order.save()
+            return Response(data={"url":checkout_session['url']})
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
