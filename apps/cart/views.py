@@ -47,7 +47,7 @@ class CartAddItemView(GeneratePermissions,generics.CreateAPIView):
         else:
             cart_item.quantity=quantity
             cart_item.save()
-        cart_items = cart.cartItems.all().order_by('product')
+        cart_items = cart.items.all().order_by('product')
         serializer = CartDetailItemListSerializer(instance=cart_items,many=True)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
 
@@ -68,7 +68,7 @@ class CartItemUpdateView(GeneratePermissions,generics.UpdateAPIView):
         cart_item = CartItem.objects.get(product=product,cart=cart)
         cart_item.quantity=quantity
         cart_item.save()
-        cart_items = cart.cartItems.all().order_by('product')
+        cart_items = cart.items.all().order_by('product')
         serializer = CartDetailItemListSerializer(instance=cart_items, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -84,7 +84,7 @@ class CartGetTotalView(APIView):
                 "total_price":0
             }
             return Response(data=data)
-        total_items = cart.cartItems.count()
+        total_items = cart.items.count()
         total_quantity=0
         total_price=0
         for cart_item in cart.cartItems.all():

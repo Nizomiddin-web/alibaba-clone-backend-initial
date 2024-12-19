@@ -62,6 +62,7 @@ class Order(models.Model):
     address_line_2 = models.CharField(null=True, blank=True, max_length=200)
     shipping = models.OneToOneField(Shipping,null=True,blank=True,on_delete=models.SET_NULL)
     is_paid = models.BooleanField(default=False)
+    transaction_id = models.CharField(null=True,blank=True,max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

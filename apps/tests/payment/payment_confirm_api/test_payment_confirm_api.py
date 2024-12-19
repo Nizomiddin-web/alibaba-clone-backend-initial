@@ -35,12 +35,13 @@ class TestPaymentConfirmView:
         }
 
         response = self.client.patch(self.url, data=payload, format='json')
-
+        print(response.json())
         assert response.status_code == status.HTTP_200_OK
         assert 'status' in response.data
         assert response.data['status'] == 'succeeded'
+        print(self.order.transaction_id)
+        print(mock_confirm.call_args_list)
         mock_confirm.assert_called_once_with(self.order.transaction_id)
-
         self.order.refresh_from_db()
         assert self.order.status == 'paid'
         assert self.cart.items.count() == 0

@@ -13,3 +13,6 @@ class PaymentInitialSerializer(serializers.Serializer):
         if int(expiry_year)>=datetime.now().year:
             return expiry_year
         raise ValidationError(detail=[f"{expiry_year} karta yil muddati tugagan!"])
+
+class PaymentConfirmApiRequestSerializer(serializers.Serializer):
+    client_secret = serializers.CharField(max_length=200)
