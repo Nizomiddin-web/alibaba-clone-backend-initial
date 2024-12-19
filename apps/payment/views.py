@@ -137,3 +137,15 @@ class PaymentSuccessApiView(APIView):
             return Response(data={"detail":"Payment failed."},status=status.HTTP_400_BAD_REQUEST)
         except stripe.error.StripeError as e:
             return Response(data={"detail":"Transaction ID is missing."},status=status.HTTP_400_BAD_REQUEST)
+
+class PaymentCancelApiView(APIView):
+    permission_classes = [IsAuthenticated,CheckOrderUser]
+    def patch(self,request,id):
+        order = get_object_or_404(Order,id=id)
+        if order.status==StatusChoice.CANCELED:
+            return Response(data={"detail":"Order already canceled."},status=status.HTTP_400_BAD_REQUEST)
+        elif order.status!=StatusChoice.PENDING:
+            return Response(data={"detail":"Order cannot be canceled."},status=status.HTTP_400_BAD_REQUEST)
+        order.status=StatusChoice.CANCELED
+        order.save()
+        return  Response(data={"detail":"Order successfully canceled."})
