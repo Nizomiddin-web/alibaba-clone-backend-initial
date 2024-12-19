@@ -118,3 +118,22 @@ class PaymentCreateWithLinkApiView(APIView):
             return Response(data={"url":checkout_session['url']})
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class PaymentSuccessApiView(APIView):
+    permission_classes = [IsAuthenticated,CheckOrderUser]
+    def patch(self,request,id):
+        order = get_object_or_404(Order,id=id)
+        if order.status==StatusChoice.CANCELED:
+            return Response(data={"detail":"Order already canceled."},status=status.HTTP_400_BAD_REQUEST)
+        elif order.status!=StatusChoice.PENDING:
+            return Response(data={"detail":"Order cannot be updated."},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            retrieve = stripe.checkout.Session.retrieve(order.transaction_id)
+            if retrieve['payment_status']=='paid':
+                order.status=StatusChoice.PAID
+                order.is_paid = True
+                order.save()
+                return Response(data={"detail":"Order updated successfully."})
+            return Response(data={"detail":"Payment failed."},status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.StripeError as e:
+            return Response(data={"detail":"Transaction ID is missing."},status=status.HTTP_400_BAD_REQUEST)

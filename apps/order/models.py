@@ -24,6 +24,7 @@ class StatusChoice(models.TextChoices):
     CANCELED = "canceled","Canceled"
     DELIVERED = "delivered","Delivered"
     SHIPPED = 'shipped','Shipped'
+    FAILED = 'failed','Failed'
 
 # class Address(models.Model):
 #     user = models.ForeignKey(User,on_delete=models.CASCADE)
