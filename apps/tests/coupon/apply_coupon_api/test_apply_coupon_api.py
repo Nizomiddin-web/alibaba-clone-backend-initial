@@ -59,6 +59,7 @@ class TestApplyCouponView:
         }
 
         response = self.client.post(self.url, data)
+        print(response.json())
         assert response.status_code == status.HTTP_200_OK
 
     def test_apply_coupon_invalid_coupon(self):

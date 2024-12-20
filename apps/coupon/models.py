@@ -19,7 +19,7 @@ class Coupon(models.Model):
     valid_from = models.DateTimeField(verbose_name="Qaysi sanadan amal qiladi")
     valid_until = models.DateTimeField(verbose_name="Qaysi sanagacha amal qiladi")
     max_uses = models.PositiveIntegerField(null=True,blank=True)
-
+    user = models.ManyToManyField(User,related_name='use_coupons',null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
