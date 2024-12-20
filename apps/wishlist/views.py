@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from order.permissions import CheckOrderUser
@@ -18,3 +18,8 @@ class WishListCreateApiView(GeneratePermissions,ListAPIView,CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+class WishlistRetrieveDestroyApiView(GeneratePermissions,RetrieveDestroyAPIView):
+    queryset = Wishlist.objects.all()
+    serializer_class = WishlistSerializer
+    permission_classes = {IsAuthenticated,CheckOrderUser}
