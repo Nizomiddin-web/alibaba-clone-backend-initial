@@ -40,6 +40,7 @@ urlpatterns = [
             path("orders/",include('order.urls')),
             path("payment/",include('payment.urls')),
             path("notifications/",include('notification.urls')),
+            path("coupons/",include('coupon.urls')),
             # path("share/",include('share.urls')),
 
             #Swagger path

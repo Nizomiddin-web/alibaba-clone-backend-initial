@@ -38,6 +38,10 @@ admin_policy:
   - notification.add_notification
   - notification.change_notification
   - notification.delete_notification
+  - coupon.view_coupon
+  - coupon.add_coupon
+  - coupon.change_coupon
+  - coupon.delete_coupon
 
 
 seller_policy:
@@ -73,6 +77,10 @@ seller_policy:
   - cart.delete_cartitem
   - notification.view_notification
   - notification.change_notification
+  - coupon.view_coupon
+  - coupon.add_coupon
+  - coupon.change_coupon
+  - coupon.delete_coupon
 
 buyer_policy:
   - user.view_buyeruser
