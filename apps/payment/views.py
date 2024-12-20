@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from datetime import timedelta
 
 from cart.models import Cart
+from notification.tasks import send_notification_task
 from order.models import Order, StatusChoice
 from order.permissions import CheckOrderUser
 from payment.serializers import PaymentInitialSerializer, PaymentConfirmApiRequestSerializer, OrderStatusSerializer
@@ -87,6 +88,10 @@ class PaymentConfirmApiView(APIView):
                 order.is_paid=True
                 order.save()
                 cart.items.all().delete()
+                try:
+                    send_notification_task.delay(email_seller='test@gmail.com',order=order)
+                except:
+                    pass
                 # ClientSecretService.delete_client_secret(user_id=request.user.id)
                 return Response(data={"status":confirm.get('status')})
             return Response(data={"detail":"Order payment status cannot be updated."},status=status.HTTP_400_BAD_REQUEST)

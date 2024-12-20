@@ -34,6 +34,10 @@ admin_policy:
   - cart.add_cartitem
   - cart.change_cartitem
   - cart.delete_cartitem
+  - notification.view_notification
+  - notification.add_notification
+  - notification.change_notification
+  - notification.delete_notification
 
 
 seller_policy:
@@ -67,7 +71,7 @@ seller_policy:
   - cart.add_cartitem
   - cart.change_cartitem
   - cart.delete_cartitem
-
+  - notification.view_notification
 
 buyer_policy:
   - user.view_buyeruser
@@ -92,3 +96,5 @@ buyer_policy:
   - order.add_order
   - order.view_orderitem
   - order.add_orderitem
+  - notification.view_notification
+
