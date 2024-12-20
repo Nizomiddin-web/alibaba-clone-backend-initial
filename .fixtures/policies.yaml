@@ -107,4 +107,8 @@ buyer_policy:
   - order.add_orderitem
   - notification.view_notification
   - notification.change_notification
+  - wishlist.view_wishlist
+  - wishlist.add_wishlist
+  - wishlist.change_wishlist
+  - wishlist.delete_wishlist
 
