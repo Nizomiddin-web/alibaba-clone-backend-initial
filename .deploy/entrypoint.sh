@@ -40,7 +40,7 @@ echo "Successfully compiled messages"
 python manage.py initial_data
 
 #added for create super user
-python manage.py my_createsuperuser --noinput --email $DJANGO_SUPERUSER_EMAIL --password $DJANGO_SUPERUSER_PASSWORD
+python manage.py createsuperuser --noinput --email $DJANGO_SUPERUSER_EMAIL --password $DJANGO_SUPERUSER_PASSWORD
 
 
 # Starting server
