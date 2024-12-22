@@ -16,7 +16,7 @@ STRIPE_TEST_SECRET_KEY = 'sk_test_51QWv0e00NikahEaenNdrYSUseNBP3W5dX20Ypy7iY7bzB
 DEBUG = config('DEBUG',default=False,cast=bool)
 AUTH_USER_MODEL = 'user.User'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 DJANGO_APPS = [
     "django.contrib.admin",
