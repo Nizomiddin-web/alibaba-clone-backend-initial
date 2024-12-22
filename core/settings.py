@@ -16,7 +16,7 @@ STRIPE_TEST_SECRET_KEY = 'sk_test_51QWv0e00NikahEaenNdrYSUseNBP3W5dX20Ypy7iY7bzB
 DEBUG = config('DEBUG',default=False,cast=bool)
 AUTH_USER_MODEL = 'user.User'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS','').split(',')
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -50,6 +50,7 @@ INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -119,6 +120,8 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
