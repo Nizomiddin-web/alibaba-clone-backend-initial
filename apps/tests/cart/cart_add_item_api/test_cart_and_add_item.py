@@ -63,6 +63,7 @@ class TestCartViews:
     def test_get_items_view_authenticated(self):
         response = self.client.get(self.url_get_items)
         assert response.status_code == status.HTTP_200_OK
+        print(response.data)
         assert len(response.data) == 2
         assert any(item['product']['title'] == 'product1' for item in response.data)
         assert any(item['product']['title'] == 'product2' for item in response.data)

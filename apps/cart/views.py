@@ -18,7 +18,7 @@ class CartDetailItemListView(GeneratePermissions,generics.ListAPIView):
 
     def get_queryset(self):
         cart = Cart.objects.filter(user=self.request.user).first()
-        return cart.cartItems.all()
+        return cart.items.all()
 
 class CartAddItemView(GeneratePermissions,generics.CreateAPIView):
     serializer_class = CartItemRequestSerializer
