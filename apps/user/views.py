@@ -118,7 +118,7 @@ class VerifyView(generics.UpdateAPIView):
         redis_conn.delete(f"{user.phone_number}:otp")
         redis_conn.delete(f"{user.phone_number}:otp_secret")
 
-        UserServie.authenticate(user.phone_number,user.password)
+        UserServie.authenticate(user.phone_number,user.password,quiet=True)
         access = TokenService.get_valid_tokens(user.id,TokenType.ACCESS)
         refresh = TokenService.get_valid_tokens(user.id,TokenType.REFRESH)
 
