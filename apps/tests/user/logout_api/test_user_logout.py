@@ -62,6 +62,7 @@ def test_logout(logout_data, mocker, fake_redis, request, tokens):
     )
 
     resp = client.post('/api/users/logout/')
+    print(resp.context)
     assert resp.status_code == status_code
 
     if status_code == 200:

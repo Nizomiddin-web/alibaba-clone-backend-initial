@@ -19,14 +19,14 @@ class TokenService:
         return valid_tokens
 
     @classmethod
-    def add_token_to_redis(cls,user_id:uuid.UUID,token:str,token_type:TokenType,lifetime:timedelta)->None:
+    def add_token_to_redis(cls,user_id:uuid.UUID,token:str,token_type:TokenType,expire_time:timedelta)->None:
         redis_client = cls.get_redis_client()
         token_key = f"user:{user_id}:{token_type}"
         valid_tokens = cls.get_valid_tokens(user_id,token_type)
         if valid_tokens:
             pass
         redis_client.sadd(token_key,token)
-        redis_client.expire(token_key,lifetime)
+        redis_client.expire(token_key,expire_time)
 
     @classmethod
     def delete_tokens(cls,user_id:uuid.UUID,token_type:TokenType)->None:

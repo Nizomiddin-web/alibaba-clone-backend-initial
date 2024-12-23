@@ -45,7 +45,7 @@ class UserServie:
                 user_id=user.id,
                 token=access,
                 token_type=TokenType.ACCESS,
-                lifetime=settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME")
+                expire_time=settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME")
             )
         valid_refresh_tokens = TokenService.get_valid_tokens(
             user_id=user.id,
@@ -56,7 +56,7 @@ class UserServie:
                 user_id=user.id,
                 token=refresh,
                 token_type=TokenType.REFRESH,
-                lifetime=settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME")
+                expire_time=settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME")
             )
         return {
             "access":access,
