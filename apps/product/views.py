@@ -12,6 +12,7 @@ from product.models import Category, Product, Color, Size, Image
 from product.permissions import HasCategoryPermission, IsProductSeller
 from product.serializers import CategorySerializer, ProductSerializer, ProductUpdateSerializer, ProductCreateSerializer, \
     ProductDetailSerializer
+from share.pagination import CustomPagination
 from share.permissions import GeneratePermissions
 
 
@@ -45,6 +46,7 @@ class CategoryViewSet(GeneratePermissions,ModelViewSet):
     serializer_class = CategorySerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['name']
+    pagination_class = CustomPagination
     # permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
@@ -88,6 +90,7 @@ class ProductViewSet(GeneratePermissions,ModelViewSet):
     filter_backends = [filters.SearchFilter,DjangoFilterBackend]
     filterset_class = ProductFilters
     search_fields = ['title','description']
+    pagination_class = CustomPagination
 
     def get_serializer_class(self):
         if self.action in ['update','partial_update']:

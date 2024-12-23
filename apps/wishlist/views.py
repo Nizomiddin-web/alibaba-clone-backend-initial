@@ -3,6 +3,7 @@ from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveDestroyA
 from rest_framework.permissions import IsAuthenticated
 
 from order.permissions import CheckOrderUser
+from share.pagination import CustomPagination
 from share.permissions import GeneratePermissions
 from wishlist.models import Wishlist
 from wishlist.serializers import WishlistSerializer
@@ -15,6 +16,7 @@ class WishListCreateApiView(GeneratePermissions,ListAPIView,CreateAPIView):
     queryset = Wishlist.objects.all()
     serializer_class = WishlistSerializer
     permission_classes = [IsAuthenticated,CheckOrderUser]
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

@@ -9,6 +9,7 @@ from cart.models import Cart
 from order.models import Order, OrderItem
 from order.permissions import CheckOrderUser
 from order.serializers import OrderCheckoutRequestSerializer, OrderCheckoutResponseSerializer
+from share.pagination import CustomPagination
 from share.permissions import GeneratePermissions
 
 
@@ -45,6 +46,7 @@ class OrderListApiView(GeneratePermissions,ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderCheckoutResponseSerializer
     permission_classes = [CheckOrderUser]
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
@@ -58,5 +60,6 @@ class OrderHistoryApiView(GeneratePermissions,ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderCheckoutResponseSerializer
     permission_classes = [CheckOrderUser,]
+    pagination_class = CustomPagination
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)

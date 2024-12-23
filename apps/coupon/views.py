@@ -1,6 +1,7 @@
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +11,7 @@ from coupon.models import Coupon, DiscountTypeChoice
 from coupon.serializers import CouponListSerializer, CouponRequestSerializer, CouponUpdateSerializer, \
     CouponApplyRequestSerializer
 from order.models import Order
+from share.pagination import CustomPagination
 from share.permissions import GeneratePermissions
 
 
@@ -19,6 +21,8 @@ class CouponListCreateApiView(GeneratePermissions,ListAPIView,CreateAPIView):
     queryset = Coupon.objects.all()
     serializer_class = CouponListSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPagination
+
 
     def get_serializer_class(self):
         if self.request.method=='POST':
