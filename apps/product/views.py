@@ -86,7 +86,6 @@ class CategoryViewSet(GeneratePermissions,ModelViewSet):
 class ProductViewSet(GeneratePermissions,ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    # permission_classes = [IsProductSeller,]
     filter_backends = [filters.SearchFilter,DjangoFilterBackend]
     filterset_class = ProductFilters
     search_fields = ['title','description']
@@ -104,4 +103,6 @@ class ProductViewSet(GeneratePermissions,ModelViewSet):
     def get_permissions(self,*args,**kwargs):
         if self.action == 'retrieve':
             return [IsAuthenticated()]
+        elif self.action in ['partial_update','update','destroy']:
+            return [IsProductSeller()]
         return super().get_permissions(*args,**kwargs)
