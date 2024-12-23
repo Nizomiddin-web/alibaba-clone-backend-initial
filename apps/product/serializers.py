@@ -43,7 +43,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
-        price = serializers.DecimalField(max_digits=10,decimal_places=2,coerce_to_string=False)
+        price = serializers.DecimalField(max_digits=10,decimal_places=2)
         colors = ColorSerializer(many=True, required=False)
         images = ImageSerializer(many=True,read_only=True)
         sizes = SizeSerializer(many=True, required=False)

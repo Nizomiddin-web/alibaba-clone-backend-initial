@@ -86,7 +86,7 @@ class CategoryViewSet(GeneratePermissions,ModelViewSet):
 class ProductViewSet(GeneratePermissions,ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsProductSeller,]
+    # permission_classes = [IsProductSeller,]
     filter_backends = [filters.SearchFilter,DjangoFilterBackend]
     filterset_class = ProductFilters
     search_fields = ['title','description']
