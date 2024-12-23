@@ -87,13 +87,13 @@ class CartGetTotalView(APIView):
         total_items = cart.items.count()
         total_quantity=0
         total_price=0
-        for cart_item in cart.cartItems.all():
+        for cart_item in cart.items.all():
             total_quantity+=cart_item.quantity
             total_price+=cart_item.product.price*cart_item.quantity
         data = {
             "total_items":total_items,
             "total_quantity":total_quantity,
-            "total_price":float(total_price)
+            "total_price":total_price
         }
         return Response(data=data)
 
@@ -114,5 +114,5 @@ class CartEmptyView(GeneratePermissions,APIView):
         cart = Cart.objects.filter(user=request.user).first()
         if not cart:
             return Response(status=status.HTTP_204_NO_CONTENT)
-        cart.cartItems.all().delete()
+        cart.items.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
